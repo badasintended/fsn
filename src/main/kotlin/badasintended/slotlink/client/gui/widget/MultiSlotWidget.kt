@@ -11,8 +11,8 @@ import badasintended.slotlink.util.toFormattedString
 import kotlin.math.ceil
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.screen.slot.SlotActionType.CLONE
 import net.minecraft.screen.slot.SlotActionType.PICKUP
@@ -36,21 +36,21 @@ class MultiSlotWidget(
 
     private val count get() = handler.itemViews[index].count
 
-    override fun renderOverlay(matrices: MatrixStack, stack: ItemStack) {
+    override fun renderOverlay(context: DrawContext, stack: ItemStack) {
         client.apply {
-            itemRenderer.renderGuiItemOverlay(matrices, textRenderer, stack, x + 1, y + 1, "")
+            context.drawItemInSlot(textRenderer, stack, x + 1, y + 1, "")
 
             val factor = window.scaleFactor.toFloat()
             val scale = (1 / factor) * ceil(factor / 2)
 
             val countText = if (count <= 1) "" else count.toFormattedString()
 
-            matrices.wrap {
-                matrices.translate(0.0, 0.0, 250.0)
-                matrices.scale(scale, scale, 1f)
-                textRenderer.drawWithShadow(
-                    matrices, countText, ((x + 17 - (textRenderer.getWidth(countText) * scale)) / scale),
-                    ((y + 17 - (textRenderer.fontHeight * scale)) / scale), 0xFFFFFF
+            context.matrices.wrap {
+                context.matrices.translate(0.0, 0.0, 250.0)
+                context.matrices.scale(scale, scale, 1f)
+                context.drawTextWithShadow(
+                    textRenderer, countText, ((x + 17 - (textRenderer.getWidth(countText) * scale)) / scale).toInt(),
+                    ((y + 17 - (textRenderer.fontHeight * scale)) / scale).toInt(), 0xFFFFFF
                 )
             }
         }

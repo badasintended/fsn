@@ -7,7 +7,7 @@ import badasintended.slotlink.screen.ConnectorCableScreenHandler
 import badasintended.slotlink.util.int
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
 
@@ -55,10 +55,10 @@ open class ConnectorCableScreen<H : ConnectorCableScreenHandler>(h: H, inventory
         }
     }
 
-    override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) {
-        super.drawForeground(matrices, mouseX, mouseY)
+    override fun drawForeground(context: DrawContext, mouseX: Int, mouseY: Int) {
+        super.drawForeground(context, mouseX, mouseY)
 
-        textRenderer.draw(matrices, "$priority", 7 + 2 * 18f, titleY + 31f, 4210752)
+        context.drawText(textRenderer, "$priority", 7 + 2 * 18, titleY + 31, 4210752, false)
     }
 
 }

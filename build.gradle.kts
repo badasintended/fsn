@@ -27,7 +27,7 @@ repositories {
     maven("https://maven.shedaniel.me/")
     maven("https://maven.terraformersmc.com/releases")
     maven("https://maven.blamejared.com/")
-    maven("https://ladysnake.jfrog.io/artifactory/mods")
+    maven("https://maven.ladysnake.org/releases")
 }
 
 dependencies {

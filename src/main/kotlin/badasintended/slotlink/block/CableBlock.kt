@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import net.fabricmc.fabric.api.`object`.builder.v1.block.FabricBlockSettings
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Material
+import net.minecraft.block.MapColor
 import net.minecraft.block.ShapeContext
 import net.minecraft.item.ItemPlacementContext
 import net.minecraft.state.StateManager
@@ -30,7 +30,8 @@ open class CableBlock(id: String = "cable", be: BlockEntityBuilder = ::CableBloc
     companion object {
 
         val SETTINGS: Settings = FabricBlockSettings
-            .of(Material.GLASS)
+            .create()
+            .mapColor(MapColor.WHITE)
             .hardness(3f)
 
         val PROPERTIES = mapOf(

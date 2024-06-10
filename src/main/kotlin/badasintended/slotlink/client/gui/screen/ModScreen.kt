@@ -5,9 +5,9 @@ import badasintended.slotlink.client.gui.widget.KeyGrabber
 import badasintended.slotlink.client.gui.widget.TooltipRenderer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.text.Text
@@ -27,19 +27,19 @@ abstract class ModScreen<H : ScreenHandler>(h: H, inventory: PlayerInventory, ti
         return addDrawableChild(t).apply(func)
     }
 
-    override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(matrices, mouseX, mouseY, delta)
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.render(context, mouseX, mouseY, delta)
 
         if (handler.cursorStack.isEmpty && focusedSlot != null && focusedSlot!!.hasStack()) {
-            this.renderTooltip(matrices, focusedSlot!!.stack, mouseX, mouseY)
+            context.drawTooltip(this.textRenderer, focusedSlot!!.stack.name, mouseX, mouseY)
         } else {
             hoveredElement = hoveredElement(mouseX.toDouble(), mouseY.toDouble()).orElse(null) as? ClickableWidget
-            (hoveredElement as? TooltipRenderer)?.renderTooltip(matrices, mouseX, mouseY)
+            (hoveredElement as? TooltipRenderer)?.renderTooltip(context, mouseX, mouseY)
         }
     }
 
-    override fun drawBackground(matrices: MatrixStack, delta: Float, mouseX: Int, mouseY: Int) {
-        renderBackground(matrices)
+    override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
+        renderBackground(context)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

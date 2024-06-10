@@ -3,7 +3,6 @@ package badasintended.slotlink.client.gui.screen
 import badasintended.slotlink.client.gui.widget.ButtonWidget
 import badasintended.slotlink.client.gui.widget.FilterSlotWidget
 import badasintended.slotlink.client.util.GuiTextures
-import badasintended.slotlink.client.util.bind
 import badasintended.slotlink.client.util.c2s
 import badasintended.slotlink.init.Packets.FILTER_SETTINGS
 import badasintended.slotlink.screen.FilterScreenHandler
@@ -11,7 +10,7 @@ import badasintended.slotlink.util.bool
 import badasintended.slotlink.util.int
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
 
@@ -53,11 +52,10 @@ open class FilterScreen<H : FilterScreenHandler>(h: H, inventory: PlayerInventor
         }
     }
 
-    override fun drawBackground(matrices: MatrixStack, delta: Float, mouseX: Int, mouseY: Int) {
-        super.drawBackground(matrices, delta, mouseX, mouseY)
+    override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
+        super.drawBackground(context, delta, mouseX, mouseY)
 
-        GuiTextures.FILTER.bind()
-        drawTexture(matrices, x, y, 0, 0, 176, 166)
+        context.drawTexture(GuiTextures.FILTER, x, y, 0, 0, 176, 166)
     }
 
     protected open fun sync() {

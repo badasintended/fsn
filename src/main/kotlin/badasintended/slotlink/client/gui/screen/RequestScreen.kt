@@ -1,12 +1,7 @@
 package badasintended.slotlink.client.gui.screen
 
-import badasintended.slotlink.client.gui.widget.ButtonWidget
-import badasintended.slotlink.client.gui.widget.CraftingResultSlotWidget
-import badasintended.slotlink.client.gui.widget.MultiSlotWidget
-import badasintended.slotlink.client.gui.widget.ScrollBarWidget
-import badasintended.slotlink.client.gui.widget.TextFieldWidget
+import badasintended.slotlink.client.gui.widget.*
 import badasintended.slotlink.client.util.GuiTextures
-import badasintended.slotlink.client.util.bind
 import badasintended.slotlink.client.util.c2s
 import badasintended.slotlink.compat.invsort.InventorySortButton
 import badasintended.slotlink.compat.recipe.RecipeViewer
@@ -25,10 +20,10 @@ import badasintended.slotlink.util.int
 import badasintended.slotlink.util.string
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
@@ -37,11 +32,19 @@ import badasintended.slotlink.util.backgroundWidth as utilBackgroundWidth
 import badasintended.slotlink.util.x as utilX
 import badasintended.slotlink.util.y as utilY
 
+import net.minecraft.client.gui.screen.recipebook.RecipeBookProvider
+import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget
+import net.minecraft.client.gui.widget.TexturedButtonWidget
+import net.minecraft.screen.AbstractRecipeScreenHandler
+import net.minecraft.util.Identifier
+
 @Environment(EnvType.CLIENT)
 class RequestScreen<H : RequestScreenHandler>(handler: H, inv: PlayerInventory, title: Text) :
-    ModScreen<H>(handler, inv, title) {
+    ModScreen<H>(handler, inv, title), RecipeBookProvider {
 
     var craftingGrid by config::showCraftingGrid
+    private val recipeBook = RecipeBookWidget()
+    private val RECIPE_BUTTON_TEXTURE = Identifier("textures/gui/recipe_button.png")
 
     var arrowX = -1
     var arrowY = -1
@@ -88,8 +91,53 @@ class RequestScreen<H : RequestScreenHandler>(handler: H, inv: PlayerInventory, 
 
         playerInventoryTitleY = backgroundHeight - 94
 
-        val x = x + 7
+        var x = x + 7
         val y = y + titleY + 11
+
+        if (craftingGrid) {
+            recipeBook.initialize(width, height, client, width < 379, handler as AbstractRecipeScreenHandler<*>)
+            this.x = recipeBook.findLeftEdge(width, backgroundWidth)
+            x = this.x + 7
+            add(TexturedButtonWidget(
+                x - 2, y + viewedHeight * 18 + 27, 20, 18, 0, 0, 19, RECIPE_BUTTON_TEXTURE
+            ) {
+                recipeBook.toggleOpen()
+                val oldX = this.x
+                this.x = recipeBook.findLeftEdge(width, backgroundWidth)
+                val offset = this.x - oldX
+                arrowX += offset
+                for (i in children()) {
+                    if (i is ClickableWidget) {
+                        i.x += offset
+                        if (i is SlotWidget<*>) {
+                            i.offsetX(offset)
+                        }
+                    }
+                }
+            })
+            addSelectableChild(recipeBook)
+            setInitialFocus(recipeBook)
+
+            // Crafting output slot
+            add(CraftingResultSlotWidget(handler, x + 108, y + viewedHeight * 18 + 27))
+
+            // Clear crafting grid button
+            add(ButtonWidget(x + 13, y + 18 + viewedHeight * 18, 8)) {
+                texture = GuiTextures.REQUEST
+                background = false
+                u = { 210 }
+                v = { 16 }
+                tooltip = { tl("craft.clear") }
+                onPressed = {
+                    c2s(CLEAR_CRAFTING_GRID) {
+                        int(syncId)
+                    }
+                }
+            }
+
+            arrowX = x + 83
+            arrowY = y + 32 + viewedHeight * 18
+        }
 
         // Linked slot view
         for (i in 0 until viewedHeight * 9) {
@@ -283,36 +331,39 @@ class RequestScreen<H : RequestScreenHandler>(handler: H, inv: PlayerInventory, 
         if (searchBar.grab) searchBar.tick()
     }
 
-    override fun drawBackground(matrices: MatrixStack, delta: Float, mouseX: Int, mouseY: Int) {
-        super.drawBackground(matrices, delta, mouseX, mouseY)
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.render(context, mouseX, mouseY, delta)
 
-        GuiTextures.REQUEST.bind()
+        recipeBook.render(context, mouseX, mouseY, delta)
+    }
+
+    override fun drawBackground(context: DrawContext, delta: Float, mouseX: Int, mouseY: Int) {
+        super.drawBackground(context, delta, mouseX, mouseY)
+
         val viewedH = viewedHeight * 18
-        drawTexture(matrices, x, y, 0, 0, 194, viewedH - 18 + 17)
-        drawTexture(matrices, x, y + viewedH - 18 + 17, 0, 107, 194, 115)
+        context.drawTexture(GuiTextures.REQUEST, x, y, 0, 0, 194, viewedH - 18 + 17)
+        context.drawTexture(GuiTextures.REQUEST, x, y + viewedH - 18 + 17, 0, 107, 194, 115)
 
         if (craftingGrid) {
-            GuiTextures.CRAFTING.bind()
-            drawTexture(matrices, x, y + viewedH + 17 + 7, 0, 0, 176, 157)
+            context.drawTexture(GuiTextures.CRAFTING, x, y + viewedH + 17 + 7, 0, 0, 176, 157)
         }
     }
 
-    override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) {
-        super.drawForeground(matrices, mouseX, mouseY)
+    override fun drawForeground(context: DrawContext, mouseX: Int, mouseY: Int) {
+        super.drawForeground(context, mouseX, mouseY)
 
-        GuiTextures.REQUEST.bind()
         handler.slots.forEach {
             if (it is LockedSlot) {
-                drawTexture(matrices, it.x, it.y, 240, 0, 16, 16)
+                context.drawTexture(GuiTextures.REQUEST, it.x, it.y, 240, 0, 16, 16)
             }
         }
 
         if (craftingGrid) {
-            textRenderer.draw(matrices, craftingText, titleX + 21f, playerInventoryTitleY - 67f, 0x404040)
+            context.drawText(textRenderer, craftingText, titleX + 21, playerInventoryTitleY - 67, 0x404040, false)
         }
 
         if (x + titleX < mouseX && mouseX <= x + titleX + titleWidth && y + titleY < mouseY && mouseY <= y + titleY + textRenderer.fontHeight) {
-            renderTooltip(matrices, tl("slotCount", filledSlots, totalSlots), mouseX - x, mouseY - y)
+            context.drawTooltip(textRenderer, tl("slotCount", filledSlots, totalSlots), mouseX - x, mouseY - y)
         }
     }
 
@@ -358,5 +409,11 @@ class RequestScreen<H : RequestScreenHandler>(handler: H, inv: PlayerInventory, 
         config.save()
         super.close()
     }
+
+    override fun refreshRecipeBook() {
+        recipeBook.refresh()
+    }
+
+    override fun getRecipeBookWidget(): RecipeBookWidget = recipeBook
 
 }

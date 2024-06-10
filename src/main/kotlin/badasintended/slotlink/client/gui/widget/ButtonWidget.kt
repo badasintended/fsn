@@ -1,14 +1,13 @@
 package badasintended.slotlink.client.gui.widget
 
 import badasintended.slotlink.client.util.GuiTextures
-import badasintended.slotlink.client.util.bind
 import badasintended.slotlink.client.util.client
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 
@@ -41,7 +40,7 @@ class ButtonWidget(x: Int, y: Int, w: Int, h: Int = w) : ClickableWidget(x, y, w
         padding.b = b
     }
 
-    override fun renderButton(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val tooltip = this.tooltip()
         if (tooltip != lastTooltip) {
             setTooltip(Tooltip.of(tooltip))
@@ -49,15 +48,14 @@ class ButtonWidget(x: Int, y: Int, w: Int, h: Int = w) : ClickableWidget(x, y, w
         }
 
         if (!visible) return
-        texture.bind()
 
         if (background) {
             val u = if (hovered) bgU + width else bgU
-            drawTexture(matrices, x, y, u, bgV, width, height)
+            context.drawTexture(texture, x, y, u, bgV, width, height)
         }
 
         padding.apply {
-            drawTexture(matrices, x + l, y + t, u(), v(), width - l - r, height - t - b)
+            context.drawTexture(texture, x + l, y + t, u(), v(), width - l - r, height - t - b)
         }
     }
 
