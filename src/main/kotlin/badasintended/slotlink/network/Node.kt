@@ -10,7 +10,8 @@ interface Node {
     fun connect(adjacentNode: Node?): Boolean {
         val other = adjacentNode ?: return false
 
-        val side = Direction.fromVector(connection.pos.subtract(other.connection.pos))!!
+        val vector = connection.pos.subtract(other.connection.pos)
+        val side = Direction.fromVector(vector.x, vector.y, vector.z)!!
         connection.sides.add(side.opposite)
         other.connection.sides.add(side)
 

@@ -5,9 +5,9 @@ import badasintended.slotlink.client.util.wrap
 import badasintended.slotlink.compat.recipe.RecipeViewer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.item.TooltipContext
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenTexts
@@ -23,25 +23,29 @@ abstract class SlotWidget<SH : ScreenHandler>(
 
     val stack get() = stackGetter.invoke()
 
-    private val stackX = x - 8 + width / 2
+    private var stackX = x - 8 + width / 2
     private val stackY = y - 8 + height / 2
+
+    fun offsetX(offset: Int) {
+        stackX += offset
+    }
 
     abstract fun onClick(button: Int)
 
     protected open fun appendTooltip(tooltip: MutableList<Text>) {}
 
-    protected open fun renderOverlay(matrices: MatrixStack, stack: ItemStack) {
+    protected open fun renderOverlay(context: DrawContext, stack: ItemStack) {
         client.apply {
-            itemRenderer.renderGuiItemOverlay(matrices, textRenderer, stack, stackX, stackY)
+            context.drawItemInSlot(textRenderer, stack, stackX, stackY)
         }
     }
 
-    override fun renderTooltip(matrices: MatrixStack, mouseX: Int, mouseY: Int) {
-        matrices.wrap {
-            matrices.translate(0.0, 0.0, +256.0)
+    override fun renderTooltip(context: DrawContext, mouseX: Int, mouseY: Int) {
+        context.matrices.wrap {
+            context.matrices.translate(0.0, 0.0, +256.0)
             val x = stackX
             val y = stackY
-            fill(matrices, x, y, x + 16, y + 16, -2130706433 /*0x80ffffff fuck*/)
+            context.fill(x, y, x + 16, y + 16, -2130706433 /*0x80ffffff fuck*/)
             if (!stack.isEmpty && handler.cursorStack.isEmpty && RecipeViewer.instance?.isDraggingStack != true)
                 client.apply {
                     val tooltips = stack.getTooltip(
@@ -49,15 +53,15 @@ abstract class SlotWidget<SH : ScreenHandler>(
                         TooltipContext.Default(options.advancedItemTooltips, player?.isCreative ?: false)
                     )
                     appendTooltip(tooltips)
-                    currentScreen?.renderTooltip(matrices, tooltips, mouseX, mouseY)
+                    context.drawTooltip(textRenderer, tooltips, mouseX, mouseY)
                 }
         }
     }
 
-    final override fun renderButton(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    final override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (!visible) return
-        client.itemRenderer.renderGuiItemIcon(matrices, stack, stackX, stackY)
-        renderOverlay(matrices, stack)
+        context.drawItem(stack, stackX, stackY)
+        renderOverlay(context, stack)
     }
 
     final override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

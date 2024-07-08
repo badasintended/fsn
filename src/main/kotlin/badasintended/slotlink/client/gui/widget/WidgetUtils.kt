@@ -1,7 +1,7 @@
 package badasintended.slotlink.client.gui.widget
 
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.util.math.MatrixStack
 
 inline fun <T> ClickableWidget.bounds(action: (Int, Int, Int, Int) -> T): T {
     return action(x, y, width, height)
@@ -21,6 +21,6 @@ interface CharGrabber {
 
 interface TooltipRenderer {
 
-    fun renderTooltip(matrices: MatrixStack, mouseX: Int, mouseY: Int)
+    fun renderTooltip(context: DrawContext, mouseX: Int, mouseY: Int)
 
 }

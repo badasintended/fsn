@@ -32,6 +32,7 @@ import kotlin.collections.set
 import kotlin.math.ceil
 import kotlin.math.min
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction
 import net.minecraft.entity.player.PlayerEntity
@@ -190,7 +191,7 @@ open class RequestScreenHandler(
                         }
 
                         QUICK_MOVE -> Transaction.openOuter().use { transaction ->
-                            val stock = storage.simulateExtract(variant, variant.item.maxCount.toLong(), transaction)
+                            val stock = StorageUtil.simulateExtract(storage, variant, variant.item.maxCount.toLong(), transaction)
                             val inserted = player.storage.offer(variant, stock, transaction)
                             storage.extract(variant, inserted, transaction)
                             transaction.commit()
@@ -263,7 +264,7 @@ open class RequestScreenHandler(
                         }
                     }
                 }
-                result.unlockLastRecipe(player)
+                result.unlockLastRecipe(player, null) // TODO is null okay here
                 result.setStack(0, ItemStack.EMPTY)
                 onContentChanged(input)
                 if (!quickMove || finished) break
@@ -296,7 +297,7 @@ open class RequestScreenHandler(
             if (it.inventory is PlayerInventory
                 && it.index >= 9
                 && it.canTakeItems(player)
-                && (cursor.isEmpty || cursor.isItemEqual(it.stack))
+                && (cursor.isEmpty || ItemStack.areItemsEqual(cursor, it.stack))
             ) {
                 it.stack = moveStackToNetwork(it.stack)
             }

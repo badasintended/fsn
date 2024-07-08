@@ -1,7 +1,7 @@
 package badasintended.slotlink.mixin;
 
-import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.CraftingResultInventory;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.screen.CraftingScreenHandler;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +12,7 @@ public interface CraftingScreenHandlerAccessor {
 
     @NotNull
     @Accessor
-    CraftingInventory getInput();
+    RecipeInputInventory getInput();
 
     @NotNull
     @Accessor

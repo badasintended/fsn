@@ -12,8 +12,8 @@ import badasintended.slotlink.util.stack
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -42,21 +42,21 @@ class FilterSlotWidget(
         tooltip.add(Text.translatable("container.slotlink.filter.slot.nbt.scroll").formatted(Formatting.GRAY))
     }
 
-    override fun renderOverlay(matrices: MatrixStack, stack: ItemStack) {
-        super.renderOverlay(matrices, stack)
+    override fun renderOverlay(context: DrawContext, stack: ItemStack) {
+        super.renderOverlay(context, stack)
 
         client.apply {
-            itemRenderer.renderGuiItemOverlay(matrices, textRenderer, stack, x + 1, y + 1, "")
+            context.drawItemInSlot(textRenderer, stack, x + 1, y + 1, "")
 
-            matrices.wrap {
-                matrices.translate(0.0, 0.0, 250.0)
-                fill(matrices, x + 1, y + 1, x + 17, y + 17, if (nbt) 0x70aa27ba else 0x408b8b8b)
+            context.matrices.wrap {
+                context.matrices.translate(0.0, 0.0, 250.0)
+                context.fill(x + 1, y + 1, x + 17, y + 17, if (nbt) 0x70aa27ba else 0x408b8b8b)
                 if (nbt) {
-                    textRenderer.drawWithShadow(
-                        matrices,
+                    context.drawTextWithShadow(
+                        textRenderer,
                         "+",
-                        x + 17f - textRenderer.getWidth("+"),
-                        y + 17f - textRenderer.fontHeight,
+                        x + 17 - textRenderer.getWidth("+"),
+                        y + 17 - textRenderer.fontHeight,
                         0xaa27ba
                     )
                 }
@@ -64,16 +64,17 @@ class FilterSlotWidget(
         }
     }
 
-    override fun renderTooltip(matrices: MatrixStack, mouseX: Int, mouseY: Int) {
-        super.renderTooltip(matrices, mouseX, mouseY)
+    override fun renderTooltip(context: DrawContext, mouseX: Int, mouseY: Int) {
+        super.renderTooltip(context, mouseX, mouseY)
 
-        if (!handler.cursorStack.isEmpty || RecipeViewer.instance?.isDraggingStack == true) matrices.wrap {
-            matrices.translate(0.0, 0.0, +256.0)
+        if (!handler.cursorStack.isEmpty || RecipeViewer.instance?.isDraggingStack == true) context.matrices.wrap {
+            context.matrices.translate(0.0, 0.0, +256.0)
+
             val tlKey = "container.slotlink.filter.slot.tip." +
                 if (Screen.hasControlDown()) "pressed" else
                     if (MinecraftClient.IS_SYSTEM_MAC) "cmd"
                     else "ctrl"
-            client.currentScreen?.renderTooltip(matrices, Text.translatable(tlKey), mouseX, mouseY)
+            context.drawTooltip(client.textRenderer, Text.translatable(tlKey), mouseX, mouseY)
         }
     }
 
